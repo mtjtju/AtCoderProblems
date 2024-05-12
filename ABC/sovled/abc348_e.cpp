@@ -36,7 +36,7 @@ using namespace std;
 using ll = long long;
 const int N = 1e5 + 1;
 
-ll res[N], low[N], ups[N], clow[N];
+ll res[N], low[N], ups[N], clow[N], totC;
 int cs[N], cntLow[N];
 vector<vector<int>> t;
 
@@ -67,6 +67,18 @@ ll calcLow(int u, int pa)
 	return low[u] = res;	
 }
 
+void calcUps(int u, int pa)
+{
+    
+    ups[u] = res[pa] - (low[u] + clow[u]) + totC - clow[u];
+    res[u] = ups[u] + low[u];
+    for (int v : t[u])
+    {
+        if (v != pa)
+            calcUps(v, u);        
+    }
+}
+
 int main()
 {
 	int n; cin >> n;
@@ -74,10 +86,12 @@ int main()
 	for (int i = 1; i < n; i++)
 	{
 		int u, v; cin >> u >> v;
-		t[u].emplace_back(v);
+		t[u].emplace_back(v),
+		t[v].emplace_back(u);
 	}
 	for (int i = 1; i <= n; i++)
-		cin >> cs[i];
+		cin >> cs[i],
+		totC += cs[i];
 		
 	int root = 1;
 	
@@ -85,10 +99,11 @@ int main()
 	calcCntLow(root, -1); 
 	calcLow(root, -1);
 	res[1] = low[1];
-	//calcUps(root, -1); 
-	//calcRes(root, -1);
-	for (int i = 1; i <= n; i++) cout << low[i] << ' '; cout << endl;
+	for (int v : t[root])
+	    calcUps(v, root);
+
 	ll minRes = LLONG_MAX;
 	for (int i = 1; i <= n; i++)
 		minRes = min(minRes, res[i]);
+	cout << minRes << endl;
 }
